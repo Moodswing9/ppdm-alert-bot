@@ -1,0 +1,52 @@
+{
+  "name": "ppdm-alert-bot",
+  "version": "1.0.0",
+  "description": "Webhook receiver for Dell EMC PPDM and NetWorker — forwards structured alerts to Slack or Teams with severity classification",
+  "type": "module",
+  "bin": {
+    "ppdm-alert-bot": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ppdm",
+    "networker",
+    "dell-emc",
+    "webhook",
+    "slack",
+    "teams",
+    "backup",
+    "alerts",
+    "mcp",
+    "claude-code"
+  ],
+  "author": "Moodswing9",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    ".env.example"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Moodswing9/ppdm-alert-bot.git"
+  },
+  "homepage": "https://moodswing9.github.io",
+  "engines": {
+    "node": ">=18"
+  }
+}
