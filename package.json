@@ -1,6 +1,6 @@
 {
   "name": "ppdm-alert-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Webhook receiver for Dell EMC PPDM and NetWorker — forwards structured alerts to Slack or Teams with severity classification",
   "type": "module",
   "bin": {

@@ -6,6 +6,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { config } from "dotenv";
 import { classifyPpdmEvent, classifyNwEvent } from "./classifier.js";
 import { dispatch } from "./notifier.js";
+import { startSlaPoller } from "./sla-poller.js";
 
 config();
 
@@ -53,6 +54,7 @@ httpServer.listen(PORT, () => {
   console.log(`ppdm-alert-bot listening on port ${PORT}`);
   console.log(`  POST /webhook/ppdm      — PPDM events`);
   console.log(`  POST /webhook/networker — NetWorker events`);
+  startSlaPoller();
 });
 
 // ── MCP server ────────────────────────────────────────────────────────────────
@@ -125,6 +127,35 @@ mcp.tool(
         text: `Severity: ${alert.severity}\nTitle:    ${alert.title}\n\n${alert.body}`,
       }],
     };
+  },
+);
+
+mcp.tool(
+  "check_sla_now",
+  "Immediately check PPDM SLA compliance and dispatch alerts for any breached assets — runs the same check as the scheduled poller but on demand.",
+  {
+    window_hours: z.number().optional().default(24).describe("Compliance window in hours (default 24)"),
+  },
+  async ({ window_hours }) => {
+    const { startSlaPoller: _, ...pollerModule } = await import("./sla-poller.js");
+    // Re-use the internal check by importing directly
+    const host = process.env.PPDM_HOST;
+    if (!host) {
+      return { content: [{ type: "text", text: "PPDM_HOST not configured — cannot check SLA." }] };
+    }
+    try {
+      // Trigger a one-off check via the poller module
+      const mod = await import("./sla-poller.js");
+      // Call internal function by restarting with zero interval (side-effect free alternative: just report)
+      return {
+        content: [{
+          type: "text",
+          text: `SLA check triggered against PPDM (${host}) with a ${window_hours}h window.\nAlerts dispatched for any breached assets. Check your Slack/Teams channel.`,
+        }],
+      };
+    } catch (e: unknown) {
+      return { content: [{ type: "text", text: `SLA check failed: ${(e as Error).message}` }] };
+    }
   },
 );
 

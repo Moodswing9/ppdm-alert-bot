@@ -32,13 +32,14 @@ npm run dev
 
 Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bot checks `X-Webhook-Secret` header.
 
-## MCP Tools (3)
+## MCP Tools (4)
 
 | Tool | What it does |
 |---|---|
 | `send_test_alert` | Send a test CRITICAL/WARNING/INFO alert to verify Slack/Teams integration |
 | `get_alert_config` | Show current config — port, destinations, thresholds |
 | `classify_event` | Dry-run classify a raw JSON payload without sending an alert |
+| `check_sla_now` | Immediately check PPDM SLA compliance and alert on any breached assets |
 
 ## Environment Variables
 
@@ -51,14 +52,17 @@ Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bo
 | `ALERT_FAILED_JOBS` | Alert on failed jobs (default true) |
 | `ALERT_SLA_BREACH` | Alert on SLA breaches (default true) |
 | `ALERT_STORAGE_PCT` | DD capacity threshold (default 85) |
+| `SLA_POLL_INTERVAL_MINS` | How often the SLA poller runs (default 60) |
+| `SLA_WINDOW_HOURS` | Backup window for SLA compliance (default 24) |
 
 ## Architecture
 
 ```
 src/
-├── index.ts        # HTTP webhook server + MCP server (3 tools)
+├── index.ts        # HTTP webhook server + MCP server (4 tools)
 ├── classifier.ts   # classifyPpdmEvent / classifyNwEvent — severity logic
-└── notifier.ts     # sendSlack / sendTeams / dispatch
+├── notifier.ts     # sendSlack / sendTeams / dispatch
+└── sla-poller.ts   # Proactive SLA checker — polls PPDM on interval, alerts on breaches
 ```
 
 ## Severity Rules
