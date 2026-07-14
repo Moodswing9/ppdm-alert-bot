@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A TypeScript webhook receiver and MCP server that listens for Dell EMC **PPDM** and **NetWorker** events, classifies them by severity (CRITICAL / WARNING / INFO), and forwards structured alerts to **Slack** or **Microsoft Teams**.
+A TypeScript webhook receiver and MCP server that listens for Dell EMC **PPDM** and **NetWorker** events, classifies them by severity (CRITICAL / WARNING / INFO), and forwards structured alerts to **Slack**, **Microsoft Teams**, **PagerDuty**, and **email**. Sends a daily email digest at a configurable UTC hour.
 
 Also exposes 4 MCP tools for use inside Claude Code: test alerts, inspect config, classify payloads, and on-demand SLA checks.
 
@@ -67,10 +67,11 @@ Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bo
 
 ```
 src/
-├── index.ts        # HTTP webhook server + MCP server (4 tools)
-├── classifier.ts   # classifyPpdmEvent / classifyNwEvent — severity logic
-├── notifier.ts     # sendSlack / sendTeams / dispatch
-└── sla-poller.ts   # Proactive SLA checker — polls PPDM on interval, alerts on breaches
+├── index.ts            # HTTP webhook server + MCP server (4 tools)
+├── classifier.ts       # classifyPpdmEvent / classifyNwEvent — severity logic
+├── notifier.ts         # sendSlack / sendTeams / sendPagerDuty / sendEmailAlert / dispatch
+├── digest-scheduler.ts # recordAlert + startDigestScheduler — daily email digest at DIGEST_HOUR UTC
+└── sla-poller.ts       # Proactive SLA checker — polls PPDM on interval, alerts on breaches
 ```
 
 ## Severity Rules
