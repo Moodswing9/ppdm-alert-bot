@@ -4,7 +4,7 @@
 
 A TypeScript webhook receiver and MCP server that listens for Dell EMC **PPDM** and **NetWorker** events, classifies them by severity (CRITICAL / WARNING / INFO), and forwards structured alerts to **Slack** or **Microsoft Teams**.
 
-Also exposes 3 MCP tools for use inside Claude Code: test alerts, inspect config, and classify payloads.
+Also exposes 4 MCP tools for use inside Claude Code: test alerts, inspect config, classify payloads, and on-demand SLA checks.
 
 ## Commands
 
@@ -54,6 +54,14 @@ Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bo
 | `ALERT_STORAGE_PCT` | DD capacity threshold (default 85) |
 | `SLA_POLL_INTERVAL_MINS` | How often the SLA poller runs (default 60) |
 | `SLA_WINDOW_HOURS` | Backup window for SLA compliance (default 24) |
+| `PAGERDUTY_ROUTING_KEY` | PagerDuty Events API v2 routing key (CRITICAL alerts only) |
+| `EMAIL_HOST`            | SMTP host for email alerts and digest |
+| `EMAIL_PORT`            | SMTP port (default 587) |
+| `EMAIL_USER`            | SMTP username |
+| `EMAIL_PASS`            | SMTP password |
+| `EMAIL_FROM`            | Sender address (defaults to EMAIL_USER) |
+| `EMAIL_TO`              | Recipient address for alerts and digest |
+| `DIGEST_HOUR`           | UTC hour for daily digest email (default 8) |
 
 ## Architecture
 

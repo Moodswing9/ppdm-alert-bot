@@ -7,6 +7,7 @@ import { config } from "dotenv";
 import { classifyPpdmEvent, classifyNwEvent } from "./classifier.js";
 import { dispatch } from "./notifier.js";
 import { startSlaPoller } from "./sla-poller.js";
+import { recordAlert, startDigestScheduler } from "./digest-scheduler.js";
 
 config();
 
@@ -45,6 +46,7 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
   if (alert) {
     console.log(`[${new Date().toISOString()}] ${alert.severity} — ${alert.title}`);
     dispatch(alert).catch(e => console.error("Dispatch error:", e.message));
+    recordAlert(alert);
   }
 
   res.writeHead(200).end("OK");
@@ -55,11 +57,12 @@ httpServer.listen(PORT, () => {
   console.log(`  POST /webhook/ppdm      — PPDM events`);
   console.log(`  POST /webhook/networker — NetWorker events`);
   startSlaPoller();
+  startDigestScheduler();
 });
 
 // ── MCP server ────────────────────────────────────────────────────────────────
 
-const mcp = new McpServer({ name: "ppdm-alert-bot", version: "1.0.0" });
+const mcp = new McpServer({ name: "ppdm-alert-bot", version: "1.2.0" });
 
 mcp.tool(
   "send_test_alert",
