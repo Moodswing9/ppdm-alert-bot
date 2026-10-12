@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
+import { createRequire } from "module";
 import { config } from "dotenv";
 import { classifyPpdmEvent, classifyNwEvent, isSuppressed } from "./classifier.js";
 import { dispatch } from "./notifier.js";
@@ -64,7 +65,10 @@ httpServer.listen(PORT, () => {
 
 // ── MCP server ────────────────────────────────────────────────────────────────
 
-const mcp = new McpServer({ name: "ppdm-alert-bot", version: "1.2.0" });
+// package.json sits one level above both src/ (tsx) and dist/ (built)
+const { version: VERSION } = createRequire(import.meta.url)("../package.json") as { version: string };
+
+const mcp = new McpServer({ name: "ppdm-alert-bot", version: VERSION });
 
 mcp.tool(
   "send_test_alert",
