@@ -16,8 +16,11 @@ npm run build
 # Run the bot (HTTP + MCP over stdio)
 npm start
 
-# Add to Claude Code
-claude mcp add ppdm-alert-bot npx ppdm-alert-bot
+# Add to Claude Code (not published to npm — use the local build)
+claude mcp add ppdm-alert-bot -- node /path/to/ppdm-alert-bot/dist/index.js
+
+# Tests
+npm test
 
 # Dev mode
 npm run dev
@@ -39,7 +42,7 @@ Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bo
 | `send_test_alert` | Send a test CRITICAL/WARNING/INFO alert to verify Slack/Teams integration |
 | `get_alert_config` | Show current config — port, destinations, thresholds |
 | `classify_event` | Dry-run classify a raw JSON payload without sending an alert |
-| `check_sla_now` | Immediately check PPDM SLA compliance and alert on any breached assets |
+| `check_sla_now` | Run an SLA check now via `runPpdmChecks`, alert on breached assets and list them |
 
 ## Environment Variables
 
@@ -49,9 +52,10 @@ Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bo
 | `WEBHOOK_SECRET` | Validates `X-Webhook-Secret` header (optional but recommended) |
 | `SLACK_WEBHOOK_URL` | Slack alerts |
 | `TEAMS_WEBHOOK_URL` | Teams alerts |
-| `ALERT_FAILED_JOBS` | Alert on failed jobs (default true) |
+| `ALERT_FAILED_JOBS` | `false` suppresses failed-job alerts (default true) |
 | `ALERT_SLA_BREACH` | Alert on SLA breaches (default true) |
-| `ALERT_STORAGE_PCT` | DD capacity threshold (default 85) |
+| `ALERT_STORAGE_PCT` | Storage warning threshold in % (default 85; `off` disables) |
+| `PPDM_HOST` / `PPDM_USER` / `PPDM_PASS` / `PPDM_PORT` | PPDM connection for the poller (port default 8443) |
 | `SLA_POLL_INTERVAL_MINS` | How often the SLA poller runs (default 60) |
 | `SLA_WINDOW_HOURS` | Backup window for SLA compliance (default 24) |
 | `PAGERDUTY_ROUTING_KEY` | PagerDuty Events API v2 routing key (CRITICAL alerts only) |
@@ -71,7 +75,10 @@ src/
 ├── classifier.ts       # classifyPpdmEvent / classifyNwEvent — severity logic
 ├── notifier.ts         # sendSlack / sendTeams / sendPagerDuty / sendEmailAlert / dispatch
 ├── digest-scheduler.ts # recordAlert + startDigestScheduler — daily email digest at DIGEST_HOUR UTC
-└── sla-poller.ts       # Proactive SLA checker — polls PPDM on interval, alerts on breaches
+└── sla-poller.ts       # PPDM poller — runPpdmChecks (paged assets + storage systems), SLA and storage rules
+test/                   # node:test + tsx; fake PPDM HTTP client, no network
+
+All logging goes to stderr — stdout is the MCP stdio channel (enforced by test/stdout.test.ts).
 ```
 
 ## Severity Rules

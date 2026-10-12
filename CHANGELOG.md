@@ -1,6 +1,18 @@
 # Changelog
 
 ## [Unreleased]
+### Fixed
+- `check_sla_now` now runs a real SLA check and lists the breached assets; it previously only replied that a check had run
+- `ALERT_FAILED_JOBS=false` now suppresses failed-job alerts; the setting was previously ignored
+- `ALERT_STORAGE_PCT` now works: the PPDM poller warns when a storage system is above the threshold (default 85%, `off` disables)
+- The PPDM poller checks every asset across all result pages; it previously stopped after the first 200
+- All logging goes to stderr, so it no longer mixes with the MCP protocol on stdout
+- `get_alert_config` reports every setting, including PagerDuty, email, the PPDM connection and which checks are on
+
+### Added
+- Test suite (21 tests, `npm test`) for the classifier, paging, SLA and storage rules, the poller and stdout hygiene; CI runs it
+- `zod` declared as a direct dependency (it was only available through the MCP SDK)
+
 ### Security
 - `nodemailer` 6 → 10 and `npm audit fix` for `axios`, `hono`, `@hono/node-server`, `fast-uri`, `ip-address` and `qs`
 - `@modelcontextprotocol/sdk` 1.29.0 → 1.32.1: the OAuth client could send credentials to an authorization server chosen by the MCP server (GHSA-6qxp-vccf-f47h)

@@ -55,11 +55,12 @@ export function startDigestScheduler(): void {
       title: `Daily Digest — ${total} alert(s) in 24h`,
       body,
       source: "PPDM",
+      kind: "digest",
       raw: {},
     });
-    console.log(`[digest] Sent daily digest: ${critical} critical, ${warning} warning, ${info} info`);
+    console.error(`[digest] Sent daily digest: ${critical} critical, ${warning} warning, ${info} info`);
   }
 
   scheduleNextDigest();
-  console.log(`[digest] Daily digest scheduled at ${targetHour}:00 UTC`);
+  console.error(`[digest] Daily digest scheduled at ${targetHour}:00 UTC`);
 }
