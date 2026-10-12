@@ -4,9 +4,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { config } from "dotenv";
-import { classifyPpdmEvent, classifyNwEvent } from "./classifier.js";
+import { classifyPpdmEvent, classifyNwEvent, isSuppressed } from "./classifier.js";
 import { dispatch } from "./notifier.js";
-import { startSlaPoller } from "./sla-poller.js";
+import { startSlaPoller, runPpdmChecks, parseStoragePct } from "./sla-poller.js";
 import { recordAlert, startDigestScheduler } from "./digest-scheduler.js";
 
 config();
@@ -43,8 +43,10 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
     ? classifyNwEvent(payload)
     : classifyPpdmEvent(payload);
 
-  if (alert) {
-    console.log(`[${new Date().toISOString()}] ${alert.severity} — ${alert.title}`);
+  if (alert && isSuppressed(alert)) {
+    console.error(`[${new Date().toISOString()}] suppressed (ALERT_FAILED_JOBS=false) — ${alert.title}`);
+  } else if (alert) {
+    console.error(`[${new Date().toISOString()}] ${alert.severity} — ${alert.title}`);
     dispatch(alert).catch(e => console.error("Dispatch error:", e.message));
     recordAlert(alert);
   }
@@ -53,9 +55,9 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`ppdm-alert-bot listening on port ${PORT}`);
-  console.log(`  POST /webhook/ppdm      — PPDM events`);
-  console.log(`  POST /webhook/networker — NetWorker events`);
+  console.error(`ppdm-alert-bot listening on port ${PORT}`);
+  console.error(`  POST /webhook/ppdm      — PPDM events`);
+  console.error(`  POST /webhook/networker — NetWorker events`);
   startSlaPoller();
   startDigestScheduler();
 });
@@ -77,6 +79,7 @@ mcp.tool(
       title: `Test alert — ${severity}`,
       body:  message ?? "Test alert from ppdm-alert-bot.",
       source: "PPDM",
+      kind: "test",
       raw: {},
     });
     return {
@@ -90,19 +93,31 @@ mcp.tool(
   "Show the current alert bot configuration — listening port, destinations, and severity thresholds.",
   {},
   async () => {
-    const slack = process.env.SLACK_WEBHOOK_URL ? "✅ configured" : "❌ not set";
-    const teams = process.env.TEAMS_WEBHOOK_URL ? "✅ configured" : "❌ not set";
+    const env = process.env;
+    const set = (v: string | undefined) => (v ? "✅ configured" : "❌ not set");
+    const storagePct = parseStoragePct(env.ALERT_STORAGE_PCT);
+    const ppdm = env.PPDM_HOST && env.PPDM_USER && env.PPDM_PASS
+      ? `✅ ${env.PPDM_HOST}:${env.PPDM_PORT ?? 8443}`
+      : "❌ not set (PPDM_HOST, PPDM_USER, PPDM_PASS)";
+    const email = env.EMAIL_HOST && env.EMAIL_USER && env.EMAIL_PASS && env.EMAIL_TO ? "✅ configured" : "❌ not set";
     return {
       content: [{
         type: "text",
-        text: `ppdm-alert-bot configuration\n\n` +
-              `Port:             ${PORT}\n` +
-              `Webhook secret:   ${SECRET ? "✅ set" : "❌ not set (open)"}\n` +
-              `Slack:            ${slack}\n` +
-              `Teams:            ${teams}\n` +
-              `Alert on failure: ${process.env.ALERT_FAILED_JOBS ?? "true"}\n` +
-              `Alert on SLA:     ${process.env.ALERT_SLA_BREACH ?? "true"}\n` +
-              `DD capacity %:    ${process.env.ALERT_STORAGE_PCT ?? "85"}`,
+        text: [
+          "ppdm-alert-bot configuration",
+          "",
+          `Port:              ${PORT}`,
+          `Webhook secret:    ${SECRET ? "✅ set" : "❌ not set (open)"}`,
+          `Slack:             ${set(env.SLACK_WEBHOOK_URL)}`,
+          `Teams:             ${set(env.TEAMS_WEBHOOK_URL)}`,
+          `PagerDuty:         ${set(env.PAGERDUTY_ROUTING_KEY)}`,
+          `Email:             ${email}`,
+          `PPDM connection:   ${ppdm}`,
+          `Failed-job alerts: ${env.ALERT_FAILED_JOBS === "false" ? "off" : "on"}`,
+          `SLA checks:        ${env.ALERT_SLA_BREACH === "false" ? "off" : `on — ${env.SLA_WINDOW_HOURS ?? 24}h window, every ${env.SLA_POLL_INTERVAL_MINS ?? 60}m`}`,
+          `Storage alerts:    ${storagePct === null ? "off" : `above ${storagePct}%`}`,
+          `Daily digest:      ${email.startsWith("✅") ? `${env.DIGEST_HOUR ?? 8}:00 UTC` : "off (needs email)"}`,
+        ].join("\n"),
       }],
     };
   },
@@ -140,22 +155,17 @@ mcp.tool(
     window_hours: z.number().optional().default(24).describe("Compliance window in hours (default 24)"),
   },
   async ({ window_hours }) => {
-    const { startSlaPoller: _, ...pollerModule } = await import("./sla-poller.js");
-    // Re-use the internal check by importing directly
-    const host = process.env.PPDM_HOST;
-    if (!host) {
-      return { content: [{ type: "text", text: "PPDM_HOST not configured — cannot check SLA." }] };
-    }
     try {
-      // Trigger a one-off check via the poller module
-      const mod = await import("./sla-poller.js");
-      // Call internal function by restarting with zero interval (side-effect free alternative: just report)
-      return {
-        content: [{
-          type: "text",
-          text: `SLA check triggered against PPDM (${host}) with a ${window_hours}h window.\nAlerts dispatched for any breached assets. Check your Slack/Teams channel.`,
-        }],
-      };
+      const result = await runPpdmChecks({ windowHours: window_hours, storagePct: null });
+      if (!result.ran) {
+        return { content: [{ type: "text", text: `SLA check not run: ${result.reason}.` }] };
+      }
+      const names = result.slaBreaches.slice(0, 20).map(a => `  - ${a.name} (last backup: ${a.lastBackupTime ?? "never"})`);
+      const more = result.slaBreaches.length > 20 ? [`  … and ${result.slaBreaches.length - 20} more`] : [];
+      const text = result.slaBreaches.length === 0
+        ? `All ${result.assetsChecked} assets have a backup within the last ${window_hours}h. No alerts sent.`
+        : [`${result.slaBreaches.length} of ${result.assetsChecked} assets have no backup within ${window_hours}h. A WARNING alert was sent for each:`, ...names, ...more].join("\n");
+      return { content: [{ type: "text", text }] };
     } catch (e: unknown) {
       return { content: [{ type: "text", text: `SLA check failed: ${(e as Error).message}` }] };
     }

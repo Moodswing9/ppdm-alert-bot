@@ -1,11 +1,26 @@
 export type Severity = "CRITICAL" | "WARNING" | "INFO";
 
+export type AlertKind =
+  | "job_failed"
+  | "job_canceled"
+  | "job_succeeded"
+  | "sla_breach"
+  | "storage_capacity"
+  | "test"
+  | "digest";
+
 export interface Alert {
   severity: Severity;
   title: string;
   body: string;
   source: "PPDM" | "NetWorker";
   raw: Record<string, unknown>;
+  kind?: AlertKind;
+}
+
+/** ALERT_FAILED_JOBS=false suppresses failed-job alerts from PPDM and NetWorker. */
+export function isSuppressed(alert: Alert, env: NodeJS.ProcessEnv = process.env): boolean {
+  return alert.kind === "job_failed" && env.ALERT_FAILED_JOBS === "false";
 }
 
 export function classifyPpdmEvent(payload: Record<string, unknown>): Alert | null {
@@ -19,6 +34,7 @@ export function classifyPpdmEvent(payload: Record<string, unknown>): Alert | nul
 
   if (state === "FAILED") {
     return {
+      kind: "job_failed",
       severity: "CRITICAL",
       title: `Backup FAILED — ${assetName}`,
       body: [
@@ -33,6 +49,7 @@ export function classifyPpdmEvent(payload: Record<string, unknown>): Alert | nul
 
   if (state === "CANCELED") {
     return {
+      kind: "job_canceled",
       severity: "WARNING",
       title: `Backup CANCELED — ${assetName}`,
       body: `Asset: ${assetName} (${assetType})\nTime: ${payload.startTime ?? "unknown"}`,
@@ -45,6 +62,7 @@ export function classifyPpdmEvent(payload: Record<string, unknown>): Alert | nul
     const bytes = Number(payload.bytesTransferred ?? 0);
     const gb    = bytes > 0 ? ` | ${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB` : "";
     return {
+      kind: "job_succeeded",
       severity: "INFO",
       title: `Backup succeeded — ${assetName}`,
       body: `Asset: ${assetName} (${assetType})${gb}\nDuration: ${payload.duration ?? "unknown"}s`,
@@ -63,6 +81,7 @@ export function classifyNwEvent(payload: Record<string, unknown>): Alert | null 
 
   if (status === "failed" || status === "1") {
     return {
+      kind: "job_failed",
       severity: "CRITICAL",
       title: `NetWorker saveset FAILED — ${clientName}`,
       body: [
@@ -78,6 +97,7 @@ export function classifyNwEvent(payload: Record<string, unknown>): Alert | null 
 
   if (status === "interrupted" || status === "2") {
     return {
+      kind: "job_canceled",
       severity: "WARNING",
       title: `NetWorker saveset interrupted — ${clientName}`,
       body: `Client: ${clientName}\nSave set: ${saveSetName}`,
