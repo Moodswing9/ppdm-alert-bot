@@ -4,7 +4,7 @@
 
 **Backup alerting for Dell PowerProtect Data Manager (PPDM) and NetWorker — Slack, Teams, PagerDuty and email, with an MCP server for Claude Code**
 
-[![Version](https://img.shields.io/badge/version-1.2.0-6366f1?style=flat-square)](https://github.com/Moodswing9/ppdm-alert-bot/releases)
+[![Version](https://img.shields.io/badge/version-1.3.0-6366f1?style=flat-square)](https://github.com/Moodswing9/ppdm-alert-bot/releases)
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/Moodswing9/ppdm-alert-bot/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Moodswing9/ppdm-alert-bot/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/badge/node-20%2B-3b82f6?style=flat-square)](#requirements)

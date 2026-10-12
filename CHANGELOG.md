@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.3.0] — 2026-10-12
 ### Fixed
 - `check_sla_now` now runs a real SLA check and lists the breached assets; it previously only replied that a check had run
 - `ALERT_FAILED_JOBS=false` now suppresses failed-job alerts; the setting was previously ignored
@@ -10,7 +10,7 @@
 - `get_alert_config` reports every setting, including PagerDuty, email, the PPDM connection and which checks are on
 
 ### Added
-- Test suite (21 tests, `npm test`) for the classifier, paging, SLA and storage rules, the poller and stdout hygiene; CI runs it
+- Test suite (22 tests, `npm test`) for the classifier, paging, SLA and storage rules, the poller, stdout hygiene and version reporting; CI runs it
 - `zod` declared as a direct dependency (it was only available through the MCP SDK)
 
 ### Security
