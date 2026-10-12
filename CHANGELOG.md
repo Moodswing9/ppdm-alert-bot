@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] — 2026-10-12
+### Changed
+- Published on npm: install with `npm install -g ppdm-alert-bot` or run with `npx ppdm-alert-bot`; README and CLAUDE.md now use the npm package
+- Releases publish automatically to npm from GitHub releases via trusted publishing, with signed provenance
+
 ## [1.3.0] — 2026-10-12
 ### Fixed
 - `check_sla_now` now runs a real SLA check and lists the breached assets; it previously only replied that a check had run
