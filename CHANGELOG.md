@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.2] — 2026-10-12
+### Changed
+- npm package description now covers PagerDuty, email, SLA and storage checks (it still said "Slack or Teams")
+- Added `CONTRIBUTING.md` and a bug-report issue template
+
 ## [1.3.1] — 2026-10-12
 ### Changed
 - Published on npm: install with `npm install -g ppdm-alert-bot` or run with `npx ppdm-alert-bot`; README and CLAUDE.md now use the npm package
