@@ -4,7 +4,7 @@
 
 **Backup alerting for Dell PowerProtect Data Manager (PPDM) and NetWorker — Slack, Teams, PagerDuty and email, with an MCP server for Claude Code**
 
-[![Version](https://img.shields.io/badge/version-1.3.0-6366f1?style=flat-square)](https://github.com/Moodswing9/ppdm-alert-bot/releases)
+[![npm](https://img.shields.io/npm/v/ppdm-alert-bot?style=flat-square&color=6366f1)](https://www.npmjs.com/package/ppdm-alert-bot)
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/Moodswing9/ppdm-alert-bot/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Moodswing9/ppdm-alert-bot/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/badge/node-20%2B-3b82f6?style=flat-square)](#requirements)
@@ -35,6 +35,15 @@
 ## Quick start
 
 ```bash
+npm install -g ppdm-alert-bot
+ppdm-alert-bot
+```
+
+Configure it with environment variables, or put them in a `.env` file in the directory you start the bot from; it loads that file automatically. [`.env.example`](.env.example) lists every setting.
+
+To run from source instead:
+
+```bash
 git clone https://github.com/Moodswing9/ppdm-alert-bot.git
 cd ppdm-alert-bot
 npm install
@@ -44,7 +53,7 @@ cp .env.example .env    # then fill in your values
 npm start
 ```
 
-The bot loads `.env` automatically. On start it listens for webhooks (port 4000 by default), starts the PPDM poller and digest scheduler if they're configured, and serves its MCP tools over stdio. Log output goes to stderr.
+On start the bot listens for webhooks (port 4000 by default), starts the PPDM poller and digest scheduler if they're configured, and serves its MCP tools over stdio. Log output goes to stderr.
 
 Then point PPDM and NetWorker at the bot:
 
@@ -130,11 +139,18 @@ The poller runs only when `PPDM_HOST`, `PPDM_USER` and `PPDM_PASS` are all set. 
 
 ## Use with Claude Code (MCP)
 
-The package isn't published to npm, so register your local build:
+Register it with Claude Code, passing your settings with `-e`:
 
 ```bash
-claude mcp add ppdm-alert-bot -- node /path/to/ppdm-alert-bot/dist/index.js
+claude mcp add ppdm-alert-bot \
+  -e SLACK_WEBHOOK_URL=https://hooks.slack.com/services/... \
+  -e PPDM_HOST=ppdm.example.com -e PPDM_USER=admin -e PPDM_PASS=... \
+  -- npx -y ppdm-alert-bot
 ```
+
+Add any other variables from [Configuration](#configuration) the same way.
+
+The first `npx` start downloads the package and can take up to a minute. For instant starts, install it once with `npm install -g ppdm-alert-bot` and register `-- ppdm-alert-bot` instead of `-- npx -y ppdm-alert-bot`.
 
 | Tool | What it does |
 |:---|:---|

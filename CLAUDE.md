@@ -16,8 +16,11 @@ npm run build
 # Run the bot (HTTP + MCP over stdio)
 npm start
 
-# Add to Claude Code (not published to npm — use the local build)
-claude mcp add ppdm-alert-bot -- node /path/to/ppdm-alert-bot/dist/index.js
+# Add to Claude Code (published on npm; pass settings with -e)
+claude mcp add ppdm-alert-bot -e SLACK_WEBHOOK_URL=... -- npx -y ppdm-alert-bot
+
+# Releases: bump package.json, then create GitHub release vX.Y.Z — publish.yml
+# publishes to npm via trusted publishing (refuses if the tag != package.json)
 
 # Tests
 npm test
