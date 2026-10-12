@@ -49,6 +49,6 @@
   },
   "homepage": "https://moodswing9.github.io",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
