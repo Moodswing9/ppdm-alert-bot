@@ -181,4 +181,4 @@ npm test         # run the tests (no network access needed)
 
 The source is in `src/`: `index.ts` (webhook server and MCP tools), `classifier.ts` (severity rules), `notifier.ts` (destinations), `sla-poller.ts` and `digest-scheduler.ts`.
 
-See [CHANGELOG.md](CHANGELOG.md) for release history.
+See [CONTRIBUTING.md](CONTRIBUTING.md) to contribute and [CHANGELOG.md](CHANGELOG.md) for release history.

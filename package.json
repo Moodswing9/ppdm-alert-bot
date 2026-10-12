@@ -1,7 +1,7 @@
 {
   "name": "ppdm-alert-bot",
-  "version": "1.3.1",
-  "description": "Webhook receiver for Dell EMC PPDM and NetWorker — forwards structured alerts to Slack or Teams with severity classification",
+  "version": "1.3.2",
+  "description": "Backup alerting for Dell EMC PPDM and NetWorker — webhook events and proactive SLA and storage checks, sent to Slack, Teams, PagerDuty and email, with an MCP server for Claude Code",
   "type": "module",
   "bin": {
     "ppdm-alert-bot": "dist/index.js"
@@ -23,7 +23,10 @@
     "backup",
     "alerts",
     "mcp",
-    "claude-code"
+    "claude-code",
+    "pagerduty",
+    "email",
+    "sla"
   ],
   "author": "Moodswing9",
   "license": "MIT",
@@ -52,5 +55,8 @@
   "homepage": "https://moodswing9.github.io",
   "engines": {
     "node": ">=20"
+  },
+  "bugs": {
+    "url": "https://github.com/Moodswing9/ppdm-alert-bot/issues"
   }
 }
