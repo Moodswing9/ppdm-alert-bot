@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.3] — 2026-11-07
+### Security
+- `follow-redirects` → 1.16.2 (via `axios`): array-form headers could bypass credential stripping on cross-origin redirects
+- `nodemailer` → 10.3.1 (address-group parsing), `body-parser` → 2.4.0 (DoS), `@hono/node-server` → 2.1.6, `fast-uri` → 3.1.9, `ip-address` → 10.7.6
+- `npm audit`: 0 vulnerabilities
+
 ## [1.3.2] — 2026-10-12
 ### Changed
 - npm package description now covers PagerDuty, email, SLA and storage checks (it still said "Slack or Teams")
