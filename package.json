@@ -1,6 +1,6 @@
 {
   "name": "ppdm-alert-bot",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Backup alerting for Dell EMC PPDM and NetWorker — webhook events and proactive SLA and storage checks, sent to Slack, Teams, PagerDuty and email, with an MCP server for Claude Code",
   "type": "module",
   "bin": {

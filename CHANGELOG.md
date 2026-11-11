@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.4] — 2026-11-11
+### Changed
+- `dotenv` 16 → 18. Its "injected env" message now goes to stderr, so it can't corrupt the MCP protocol on stdout (verified with a stdio handshake)
+- `@modelcontextprotocol/sdk` 1.32.1 → 1.32.2, `axios` 1.20.0 → 1.21.0, `zod` 4.6.6 → 4.6.7, `tsx` 4.22.4 → 4.23.15
+- `npm audit`: 0 vulnerabilities
+
 ## [1.3.3] — 2026-11-07
 ### Security
 - `follow-redirects` → 1.16.2 (via `axios`): array-form headers could bypass credential stripping on cross-origin redirects
