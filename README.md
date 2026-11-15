@@ -124,6 +124,8 @@ The poller runs only when `PPDM_HOST`, `PPDM_USER` and `PPDM_PASS` are all set. 
 | `PPDM_HOST` | PPDM hostname or IP | — |
 | `PPDM_USER` / `PPDM_PASS` | PPDM credentials | — |
 | `PPDM_PORT` | PPDM HTTPS port | `8443` |
+| `PPDM_CA_FILE` | PEM file with the CA that signed PPDM's certificate, or PPDM's own self-signed certificate. Keeps the connection verified. See [TLS certificates](#tls-certificates) | — |
+| `PPDM_TLS_INSECURE` | `true` turns certificate verification off (labs only: credentials can be intercepted). Prints a warning | `false` |
 | `SLA_POLL_INTERVAL_MINS` | Minutes between checks. The first check runs at startup | `60` |
 | `SLA_WINDOW_HOURS` | An asset is in breach if its last backup is older than this, or it has never been backed up | `24` |
 | `ALERT_SLA_BREACH` | Set to `false` to turn the SLA check off | `true` |
@@ -165,7 +167,17 @@ When Claude Code starts the MCP server, the same process also opens the webhook 
 
 ## Known limitations
 
-- **TLS verification is disabled** for the PPDM connection, because PPDM servers commonly use self-signed certificates. Run the bot on a trusted internal network.
+- **TLS certificates are verified** for the PPDM connection (since 1.4.0). See [TLS certificates](#tls-certificates).
+
+### TLS certificates
+
+PPDM usually ships with a self-signed certificate, which the poller refuses by default. Trust it with `PPDM_CA_FILE` (recommended) rather than turning verification off with `PPDM_TLS_INSECURE=true`. To fetch PPDM's certificate:
+
+```bash
+openssl s_client -connect ppdm.example.com:8443 -showcerts </dev/null 2>/dev/null   | openssl x509 -outform PEM > ppdm-ca.pem
+```
+
+Check its fingerprint (`openssl x509 -in ppdm-ca.pem -noout -fingerprint -sha256`) against the PPDM UI or console before trusting it. Node's `NODE_EXTRA_CA_CERTS` also works if you'd rather trust a CA process-wide.
 - **Repeat alerts.** A breached asset or a full storage system is reported again on every poll until it's resolved.
 - **Storage fields.** Storage usage is read from `usedPercentage`, or computed from `usedCapacity` / `totalCapacity` (the same mapping ppdm-capacity-planner uses).
 

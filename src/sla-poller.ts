@@ -1,5 +1,5 @@
 import axios from "axios";
-import https from "https";
+import { tlsAgent } from "./tls.js";
 import { dispatch as defaultDispatch } from "./notifier.js";
 import type { Alert } from "./classifier.js";
 
@@ -104,7 +104,7 @@ export function parseStoragePct(value: string | undefined): number | null {
 function createHttp(env: NodeJS.ProcessEnv): PpdmHttp {
   return axios.create({
     baseURL: `https://${env.PPDM_HOST}:${Number(env.PPDM_PORT ?? 8443)}/api/v2`,
-    httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+    httpsAgent: tlsAgent("PPDM", env),
     timeout: 30_000,
   });
 }
