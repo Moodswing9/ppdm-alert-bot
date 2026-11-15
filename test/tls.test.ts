@@ -89,3 +89,15 @@ test("the default agent verifies certificates", () => {
   const opts = (tlsAgent("PPDM", {}) as unknown as { options: https.AgentOptions }).options;
   assert.notEqual(opts.rejectUnauthorized, false);
 });
+
+// ---- 2.0.1: TLS errors tell the user what to do -----------------------------
+
+test("self-signed PPDM, no CA file: the poller error says to set PPDM_CA_FILE", async () => {
+  await assert.rejects(check(env()), (err: Error) =>
+    /PPDM's TLS certificate is not trusted\. If it is self-signed, set PPDM_CA_FILE/.test(err.message) &&
+    /github\.com\/Moodswing9\/ppdm-alert-bot#tls-certificates/.test(err.message));
+});
+
+test("wrong CA file: the poller error says the CA file does not match", async () => {
+  await assert.rejects(check(env({ PPDM_CA_FILE: otherCert })), /not signed by the certificate in PPDM_CA_FILE/);
+});
