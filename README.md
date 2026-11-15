@@ -11,6 +11,10 @@
 
 </div>
 
+> [!IMPORTANT]
+> **Upgrading from 1.x:** 2.0 verifies PPDM's TLS certificate. If your PPDM uses a self-signed certificate, set `PPDM_CA_FILE` (see [TLS certificates](#tls-certificates)), or the poller's connection will fail.
+> If you registered `npx -y ppdm-alert-bot` without a version, you already run 2.0. To stay on 1.x until you've set the CA file, register `npx -y ppdm-alert-bot@1` (1.x does **not** verify certificates).
+
 ---
 
 ## Overview
@@ -35,7 +39,7 @@
 ## Quick start
 
 ```bash
-npm install -g ppdm-alert-bot
+npm install -g ppdm-alert-bot@2
 ppdm-alert-bot
 ```
 
@@ -146,12 +150,14 @@ Register it with Claude Code, passing your settings with `-e`:
 claude mcp add ppdm-alert-bot \
   -e SLACK_WEBHOOK_URL=https://hooks.slack.com/services/... \
   -e PPDM_HOST=ppdm.example.com -e PPDM_USER=admin -e PPDM_PASS=... \
-  -- npx -y ppdm-alert-bot
+  -- npx -y ppdm-alert-bot@2
 ```
 
 Add any other variables from [Configuration](#configuration) the same way.
 
-The first `npx` start downloads the package and can take up to a minute. For instant starts, install it once with `npm install -g ppdm-alert-bot` and register `-- ppdm-alert-bot` instead of `-- npx -y ppdm-alert-bot`.
+The first `npx` start downloads the package and can take up to a minute. For instant starts, install it once with `npm install -g ppdm-alert-bot@2` and register `-- ppdm-alert-bot` instead of `-- npx -y ppdm-alert-bot@2`.
+
+The `@2` pins the major version, so a future breaking release never reaches you without you choosing it.
 
 | Tool | What it does |
 |:---|:---|
