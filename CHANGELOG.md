@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.1] — 2026-11-15
+### Fixed
+- TLS errors from the PPDM poller now say what to do. A self-signed or untrusted certificate adds "set `PPDM_CA_FILE` to its certificate" with a link to the README; a CA file that doesn't match, a host name mismatch and an expired certificate each get their own hint
+- The npm page now shows the "Upgrading from 1.x" note and version-pinned setup examples
+
 ## [2.0.0] — 2026-11-15
 ### Security
 - **The PPDM poller now verifies TLS certificates.** Before, verification was always off, so the PPDM credentials sent at login could be intercepted on the network (CodeQL `js/disabling-certificate-validation`)

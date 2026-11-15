@@ -1,5 +1,5 @@
 import axios from "axios";
-import { tlsAgent } from "./tls.js";
+import { tlsAgent, withTlsHints } from "./tls.js";
 import { dispatch as defaultDispatch } from "./notifier.js";
 import type { Alert } from "./classifier.js";
 
@@ -102,11 +102,11 @@ export function parseStoragePct(value: string | undefined): number | null {
 }
 
 function createHttp(env: NodeJS.ProcessEnv): PpdmHttp {
-  return axios.create({
+  return withTlsHints(axios.create({
     baseURL: `https://${env.PPDM_HOST}:${Number(env.PPDM_PORT ?? 8443)}/api/v2`,
     httpsAgent: tlsAgent("PPDM", env),
     timeout: 30_000,
-  });
+  }), "PPDM", env);
 }
 
 /** Log in, run the SLA and storage checks, dispatch alerts, log out. Returns what was found. */
