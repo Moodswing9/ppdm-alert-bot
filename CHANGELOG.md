@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.0] — 2026-11-15
+### Security
+- **The PPDM poller now verifies TLS certificates.** Before, verification was always off, so the PPDM credentials sent at login could be intercepted on the network (CodeQL `js/disabling-certificate-validation`)
+
+### Action required
+A PPDM with a self-signed certificate will refuse the poller's connection after upgrading until you set `PPDM_CA_FILE` to PPDM's CA or self-signed certificate (PEM). The README shows how to fetch it. There is deliberately no option to turn verification off
+
+### Added
+- `src/tls.ts` builds the HTTPS agent. An unreadable CA file stops with a clear error instead of falling back to insecure
+- 6 tests running the real poller against a local HTTPS server with a self-signed certificate (generated per run): refused by default with no credentials sent, runs with the right CA file, refused with the wrong one, no bypass via `PPDM_TLS_INSECURE`
+
 ## [1.3.4] — 2026-11-11
 ### Changed
 - `dotenv` 16 → 18. Its "injected env" message now goes to stderr, so it can't corrupt the MCP protocol on stdout (verified with a stdio handshake)
