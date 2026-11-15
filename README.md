@@ -166,7 +166,7 @@ When Claude Code starts the MCP server, the same process also opens the webhook 
 
 ## Known limitations
 
-- **TLS certificates are verified** for the PPDM connection (since 1.4.0). See [TLS certificates](#tls-certificates).
+- **TLS certificates are verified** for the PPDM connection (since 2.0.0). See [TLS certificates](#tls-certificates).
 
 ### TLS certificates
 

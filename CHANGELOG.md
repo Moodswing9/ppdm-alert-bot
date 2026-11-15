@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.4.0] — 2026-11-15
+## [2.0.0] — 2026-11-15
 ### Security
 - **The PPDM poller now verifies TLS certificates.** Before, verification was always off, so the PPDM credentials sent at login could be intercepted on the network (CodeQL `js/disabling-certificate-validation`)
 
