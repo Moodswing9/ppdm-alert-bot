@@ -56,15 +56,6 @@ const env = (extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv => ({
 const check = (e: NodeJS.ProcessEnv) =>
   runPpdmChecks({ windowHours: 24, storagePct: null }, { env: e, dispatch: async () => {} });
 
-function quietStderr<T>(fn: () => Promise<T> | T) {
-  const orig = console.error;
-  let stderr = "";
-  console.error = (...a: unknown[]) => { stderr += a.join(" ") + "\n"; };
-  return Promise.resolve()
-    .then(fn)
-    .then((result) => ({ result, stderr }))
-    .finally(() => { console.error = orig; });
-}
 
 test("default: the poller refuses a self-signed PPDM and never sends credentials", async () => {
   requests.length = 0;
@@ -84,16 +75,14 @@ test("PPDM_CA_FILE with an unrelated certificate: refused", async () => {
   await assert.rejects(check(env({ PPDM_CA_FILE: otherCert })));
 });
 
-test("PPDM_TLS_INSECURE=true: the poller runs and warns on stderr", async () => {
-  const { result, stderr } = await quietStderr(() => check(env({ PPDM_TLS_INSECURE: "true" })));
-  assert.equal(result.ran, true);
-  assert.match(stderr, /PPDM_TLS_INSECURE=true - TLS certificate verification is OFF/);
+test("there is no opt-out: PPDM_TLS_INSECURE is ignored", async () => {
+  requests.length = 0;
+  await assert.rejects(check(env({ PPDM_TLS_INSECURE: "true" })));
+  assert.deepEqual(requests, [], "no request may reach the server");
 });
 
-test("invalid settings fail loudly instead of falling back to insecure", async () => {
-  assert.throws(() => tlsAgent("PPDM", { PPDM_TLS_INSECURE: "yes" }), /must be "true" or "false"/);
+test("an unreadable CA file fails loudly instead of falling back", async () => {
   await assert.rejects(check(env({ PPDM_CA_FILE: path.join(dir, "missing.pem") })), /PPDM_CA_FILE: cannot read/);
-  assert.throws(() => tlsAgent("PPDM", { PPDM_TLS_INSECURE: "true", PPDM_CA_FILE: serverCert }), /not both/);
 });
 
 test("the default agent verifies certificates", () => {

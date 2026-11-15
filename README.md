@@ -124,8 +124,7 @@ The poller runs only when `PPDM_HOST`, `PPDM_USER` and `PPDM_PASS` are all set. 
 | `PPDM_HOST` | PPDM hostname or IP | — |
 | `PPDM_USER` / `PPDM_PASS` | PPDM credentials | — |
 | `PPDM_PORT` | PPDM HTTPS port | `8443` |
-| `PPDM_CA_FILE` | PEM file with the CA that signed PPDM's certificate, or PPDM's own self-signed certificate. Keeps the connection verified. See [TLS certificates](#tls-certificates) | — |
-| `PPDM_TLS_INSECURE` | `true` turns certificate verification off (labs only: credentials can be intercepted). Prints a warning | `false` |
+| `PPDM_CA_FILE` | PEM file with the CA that signed PPDM's certificate, or PPDM's own self-signed certificate. See [TLS certificates](#tls-certificates) | — |
 | `SLA_POLL_INTERVAL_MINS` | Minutes between checks. The first check runs at startup | `60` |
 | `SLA_WINDOW_HOURS` | An asset is in breach if its last backup is older than this, or it has never been backed up | `24` |
 | `ALERT_SLA_BREACH` | Set to `false` to turn the SLA check off | `true` |
@@ -171,7 +170,7 @@ When Claude Code starts the MCP server, the same process also opens the webhook 
 
 ### TLS certificates
 
-PPDM usually ships with a self-signed certificate, which the poller refuses by default. Trust it with `PPDM_CA_FILE` (recommended) rather than turning verification off with `PPDM_TLS_INSECURE=true`. To fetch PPDM's certificate:
+PPDM usually ships with a self-signed certificate, which the poller refuses: certificates are always verified, and there is no option to turn that off. Trust PPDM's certificate with `PPDM_CA_FILE`. To fetch it:
 
 ```bash
 openssl s_client -connect ppdm.example.com:8443 -showcerts </dev/null 2>/dev/null   | openssl x509 -outform PEM > ppdm-ca.pem

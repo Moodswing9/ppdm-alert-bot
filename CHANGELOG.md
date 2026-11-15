@@ -5,13 +5,11 @@
 - **The PPDM poller now verifies TLS certificates.** Before, verification was always off, so the PPDM credentials sent at login could be intercepted on the network (CodeQL `js/disabling-certificate-validation`)
 
 ### Action required
-A PPDM with a self-signed certificate will refuse the poller's connection after upgrading until you set:
-- `PPDM_CA_FILE` — path to PPDM's CA or self-signed certificate (PEM). Recommended: the connection stays verified. The README shows how to fetch it
-- or `PPDM_TLS_INSECURE=true` — the previous behavior, for labs. Prints a warning to stderr
+A PPDM with a self-signed certificate will refuse the poller's connection after upgrading until you set `PPDM_CA_FILE` to PPDM's CA or self-signed certificate (PEM). The README shows how to fetch it. There is deliberately no option to turn verification off
 
 ### Added
-- `src/tls.ts` builds the HTTPS agent. Invalid values (unreadable CA file, `PPDM_TLS_INSECURE` not true/false, both set) stop with a clear error instead of falling back to insecure
-- 6 tests running the real poller against a local HTTPS server with a self-signed certificate (generated per run): refused by default with no credentials sent, runs with the right CA file, refused with the wrong one, runs with the opt-out
+- `src/tls.ts` builds the HTTPS agent. An unreadable CA file stops with a clear error instead of falling back to insecure
+- 6 tests running the real poller against a local HTTPS server with a self-signed certificate (generated per run): refused by default with no credentials sent, runs with the right CA file, refused with the wrong one, no bypass via `PPDM_TLS_INSECURE`
 
 ## [1.3.4] — 2026-11-11
 ### Changed

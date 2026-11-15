@@ -59,7 +59,7 @@ Both endpoints accept JSON payloads. Secure with `WEBHOOK_SECRET` env var — bo
 | `ALERT_SLA_BREACH` | Alert on SLA breaches (default true) |
 | `ALERT_STORAGE_PCT` | Storage warning threshold in % (default 85; `off` disables) |
 | `PPDM_HOST` / `PPDM_USER` / `PPDM_PASS` / `PPDM_PORT` | PPDM connection for the poller (port default 8443) |
-| `PPDM_CA_FILE` / `PPDM_TLS_INSECURE` | TLS: trust a CA or self-signed cert / explicit, warned opt-out. Certificates are verified by default; the agent comes from `src/tls.ts`. Never hardcode `rejectUnauthorized: false` — `test/tls.test.ts` and the CodeQL ruleset will fail the PR |
+| `PPDM_CA_FILE` | TLS: trust a CA or self-signed cert. Certificates are always verified (deliberately no opt-out); the agent comes from `src/tls.ts`. Never hardcode `rejectUnauthorized: false` — `test/tls.test.ts` and the CodeQL ruleset will fail the PR |
 | `SLA_POLL_INTERVAL_MINS` | How often the SLA poller runs (default 60) |
 | `SLA_WINDOW_HOURS` | Backup window for SLA compliance (default 24) |
 | `PAGERDUTY_ROUTING_KEY` | PagerDuty Events API v2 routing key (CRITICAL alerts only) |
